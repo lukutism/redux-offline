@@ -49,10 +49,7 @@ export const offline = (userConfig: $Shape<Config> = {}) => (
   const offlineMiddleware = applyMiddleware(createOfflineMiddleware(config));
 
   // create autoRehydrate enhancer if required
-  const offlineEnhancer =
-    config.persist && config.rehydrate && config.persistAutoRehydrate
-      ? compose(offlineMiddleware, config.persistAutoRehydrate())
-      : offlineMiddleware;
+  const offlineEnhancer = offlineMiddleware;
 
   // create store
   const store = offlineEnhancer(createStore)(
@@ -66,11 +63,6 @@ export const offline = (userConfig: $Shape<Config> = {}) => (
   store.replaceReducer = function replaceReducer(nextReducer) {
     return baseReplaceReducer(enhanceReducer(nextReducer, config));
   };
-
-  // launch store persistor
-  if (config.persist) {
-    config.persist(store, config.persistOptions, config.persistCallback);
-  }
 
   // launch network detector
   if (config.detectNetwork) {
@@ -100,10 +92,7 @@ export const createOffline = (userConfig: $Shape<Config> = {}) => {
     enhancer: any
   ) => {
     // create autoRehydrate enhancer if required
-    const createStore =
-      config.persist && config.rehydrate && config.persistAutoRehydrate
-        ? config.persistAutoRehydrate()(next)
-        : next;
+    const createStore = next;
 
     // create store
     const store = createStore(reducer, preloadedState, enhancer);
@@ -112,11 +101,6 @@ export const createOffline = (userConfig: $Shape<Config> = {}) => {
     store.replaceReducer = function replaceReducer(nextReducer) {
       return baseReplaceReducer(enhanceReducer(nextReducer, config));
     };
-
-    // launch store persistor
-    if (config.persist) {
-      config.persist(store, config.persistOptions, config.persistCallback);
-    }
 
     // launch network detector
     if (config.detectNetwork) {
